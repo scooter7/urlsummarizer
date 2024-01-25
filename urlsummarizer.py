@@ -12,7 +12,7 @@ def scrape_webpage(url):
 def summarize_text(text, openai_api_key):
     openai.api_key = openai_api_key
     response = openai.Completion.create(
-        model="text-davinci-003",
+        model="gpt-3.5-turbo-instruct",
         prompt=f"Summarize the following content in one paragraph:\n{text}",
         max_tokens=150
     )
