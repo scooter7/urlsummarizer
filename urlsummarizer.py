@@ -11,14 +11,12 @@ def scrape_webpage(url):
 
 def summarize_text(text, openai_api_key):
     openai.api_key = openai_api_key
-    response = openai.ChatCompletion.create(
+    response = openai.Completion.create(
         model="text-davinci-003",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Summarize the following content in one paragraph:\n{text}"}
-        ]
+        prompt=f"Summarize the following content in one paragraph:\n{text}",
+        max_tokens=150
     )
-    return response.choices[0].message['content']
+    return response.choices[0].text.strip()
 
 def process_spreadsheet(uploaded_file, openai_api_key):
     df = pd.read_csv(uploaded_file)
