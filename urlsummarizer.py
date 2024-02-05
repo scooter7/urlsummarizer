@@ -5,9 +5,12 @@ from bs4 import BeautifulSoup
 import openai
 
 def scrape_webpage(url):
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    return soup.get_text()
+    try:
+        page = requests.get(url, timeout=10)  # Added a timeout for the request
+        soup = BeautifulSoup(page.content, 'html.parser')
+        return soup.get_text()
+    except requests.exceptions.RequestException as e:  # This catches all request-related errors
+        return f"Error: Could not retrieve content from {url}. Reason: {e}"
 
 def split_text_into_chunks(text, max_chunk_size=4000):
     words = text.split(' ')
@@ -28,6 +31,8 @@ def split_text_into_chunks(text, max_chunk_size=4000):
 
 def summarize_chunk(chunk, openai_api_key):
     openai.api_key = openai_api_key
+    if "Error" in chunk:  # Checks if the chunk is actually an error message
+        return chunk  # Returns the error message without attempting to summarize it
     response = openai.Completion.create(
         model="gpt-3.5-turbo-instruct",
         prompt=f"Summarize the following content in one paragraph:\n{chunk}",
@@ -38,6 +43,8 @@ def summarize_chunk(chunk, openai_api_key):
     return response.choices[0].text.strip()
 
 def summarize_text(text, openai_api_key):
+    if "Error" in text:  # Checks if the text is actually an error message
+        return text  # Returns the error message without attempting to summarize it
     chunks = split_text_into_chunks(text)
     summaries = [summarize_chunk(chunk, openai_api_key) for chunk in chunks]
     final_summary = ' '.join(summaries)
